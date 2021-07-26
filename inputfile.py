@@ -7,8 +7,8 @@ Created on Fri Jul 23 15:47:25 2021
 import sys
 import manipulations as m
 
-file1 = "zeo-tpa-tynker.xyz"
-file2 = "output"
+file1 = sys.argv[1]
+file2 = sys.argv[2]
 
 with open (file1,'r') as toread:
     lines = toread.readlines()
