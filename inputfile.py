@@ -7,13 +7,14 @@ Created on Fri Jul 23 15:47:25 2021
 import sys
 import manipulations as m
 
-file1 = sys.argv[1]
-file2 = sys.argv[2]
+file1 = "zeo-tpa-tynker.xyz"
+file2 = "output"
 
 with open (file1,'r') as toread:
     lines = toread.readlines()
-    
-natoms = int(lines[0])    #number of atoms
+
+headerline= lines[0].split()    #read header line
+natoms = int(headerline[0])    #number of atoms
 
 # Looking for lines to duplicate (or not=otherlines)
 
@@ -35,14 +36,14 @@ coordo = []
 linkedatomso = []
 for i in range(len(oxygenlines)):
     nlineo = oxygenlines[i]
-    line = lines[nlineo]
+    line = lines[nlineo].strip()
     x = m.itemline(line,2)
     y = m.itemline(line,3)
     z = m.itemline(line,4)
-    length = len(line.strip().split()) - 6
-    coordo.append([x,y,z])
+    coord = [x,y,z]
+    coordo.append(coord)
     latoms = []
-    for k in range(6,length):
+    for k in range(6,8):
         latoms.append(m.itemline(line,k))
     linkedatomso.append(latoms)
 
@@ -55,8 +56,7 @@ for i in range(len(fluorlines)):
     x = m.itemline(line,2)
     y = m.itemline(line,3)
     z = m.itemline(line,4)
-    coordo.append([x,y,z])
-    latoms = []
+    coordf.append([x,y,z])
     
 # Writting new input file
 # First, we modify the atoms already in the input file
@@ -71,28 +71,33 @@ with open (file2,'w') as fillin:
                 x = coordo[k][0]
                 y = coordo[k][1]
                 z = coordo[k][2]
-                text ='O  '+x+"  "+y+"  "+z+"  8  "
+                text ='  O   '+x+"  "+y+"  "+z+"  -8  "
                 l = linkedatomso[k]
-                for j in range(6,len(l)+1):
-                    text = text+m.itemline(i,j)+'  '
+                for j in range(2):
+                    text = text+l[j]+'  '
                 text = text+str(natoms+len(fluorlines)+caseoxygen)+"\n"
                 fillin.write(text)
+
         for k in range(len(fluorlines)):
             if fluorlines[k]==i:
                 casefluor+=1
                 x = coordf[k][0]
                 y = coordf[k][1]
                 z = coordf[k][2]
-                text = 'F  '+x+"  "+y+"  "+z+"  4  "
-                +str(natoms+casefluor)+"\n"
+                fluor = natoms+casefluor
+                text = '  F   '+x+"  "+y+"  "+z+"  -4  "+ str(fluor) +"\n"
                 fillin.write(text)
         for k in range(len(otherlines)):
             if otherlines[k]==i:
-                text=' '
+                text = '  '
                 line=lines[i].strip().split()
-                for j in range(1,len(line)+1):
-                    text = text+line[j]
+                for j in range(1,5):
+                    text = text+line[j]+'  '
+                text += '-17  '
+                for j in range(6,len(line)):
+                    text = text+line[j]+'  '
                 fillin.write(text)
+                fillin.write("\n")
     
 # Then we add the new duplicates for oxygen and fluoride
 
@@ -100,11 +105,11 @@ with open (file2,'w') as fillin:
         x = coordf[k][0]
         y = coordf[k][1]
         z = coordf[k][2]
-        text ='F  '+x+"  "+y+"  "+z+"  3  "+fluorlines[k]+"\n"
+        text ='F  '+x+"  "+y+"  "+z+"  -3  "+str(fluorlines[k])+"\n"
         fillin.write(text)
     for k in range(len(oxygenlines)):
         x = coordo[k][0]
         y = coordo[k][1]
         z = coordo[k][2]
-        text ='O  '+x+"  "+y+"  "+z+"  7  "+oxygenlines[k]+"\n"
+        text ='O  '+x+"  "+y+"  "+z+"  -7  "+str(oxygenlines[k])+"\n"
         fillin.write(text)
